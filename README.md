@@ -1,6 +1,3 @@
-Tôi sẽ tạo README.md cho dự án capyface-commons:
-
-```markdown
 # CapyFace Commons
 
 ## Overview
