@@ -11,11 +11,6 @@ CapyFace Commons là một thư viện tiện ích dùng chung cho các microser
 - Hỗ trợ heartbeat cho các services
 - Tích hợp với Redis để quản lý service discovery
 
-### Các tính năng khác (Coming soon)
-- Authentication utilities
-- Common logging
-- Configuration management
-
 ## Installation
 
 ### Cài đặt từ GitHub
