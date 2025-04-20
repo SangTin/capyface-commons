@@ -1,5 +1,3 @@
-Dưới đây là README đã cập nhật, bao gồm phương thức `start_heartbeat` cho Redis Service Registry:
-
 # CapyFace Commons
 
 ## Overview
