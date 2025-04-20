@@ -55,5 +55,29 @@ def compile_protos():
     
     print("Proto compilation completed")
 
+def fix_grpc_imports(directory):
+    """Fix imports in generated *_pb2_grpc.py files"""
+    for filename in os.listdir(directory):
+        if filename.endswith('_pb2_grpc.py'):
+            filepath = os.path.join(directory, filename)
+            
+            # Đọc file
+            with open(filepath, 'r') as file:
+                content = file.read()
+            
+            # Tìm và thay thế import
+            module_name = filename.replace('_pb2_grpc.py', '_pb2')
+            pattern = f'import {module_name} as'
+            replacement = f'from capyface_commons.generated import {module_name} as'
+            
+            new_content = content.replace(pattern, replacement)
+            
+            # Ghi nội dung mới
+            with open(filepath, 'w') as file:
+                file.write(new_content)
+            
+            print(f"Fixed imports in {filename}")
+
 if __name__ == '__main__':
     compile_protos()
+    fix_grpc_imports('capyface_commons/generated')
