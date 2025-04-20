@@ -1,50 +1,48 @@
 # capyface_commons/grpc_service/service_registry.py
 import json
-import os
+import redis
 import logging
+import os
+import time
+import threading
 
 logger = logging.getLogger('capyface.service_registry')
 
-class ServiceRegistry:
-    """
-    Quản lý đăng ký các gRPC services
-    """
+class RedisServiceRegistry:
+    """Quản lý đăng ký các gRPC services sử dụng Redis"""
     
-    def __init__(self, config_file=None):
-        """
-        Khởi tạo registry
-        
-        Args:
-            config_file: Đường dẫn file cấu hình JSON
-        """
-        self.config_file = config_file or os.environ.get('GRPC_CONFIG_FILE', '/app/config/grpc_services.json')
-        self.services = {}
-        
-        # Tạo thư mục chứa file nếu chưa tồn tại
-        os.makedirs(os.path.dirname(self.config_file), exist_ok=True)
-        
-        # Load cấu hình nếu file tồn tại
-        if os.path.exists(self.config_file):
-            self._load_config()
+    _instance = None
     
-    def _load_config(self):
-        """Load cấu hình từ file JSON"""
-        try:
-            with open(self.config_file, 'r') as f:
-                self.services = json.load(f)
-            logger.info(f"Loaded service registry from {self.config_file}")
-        except Exception as e:
-            logger.error(f"Error loading service registry: {e}")
-            self.services = {}
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(RedisServiceRegistry, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
     
-    def _save_config(self):
-        """Lưu cấu hình vào file JSON"""
-        try:
-            with open(self.config_file, 'w') as f:
-                json.dump(self.services, f, indent=2)
-            logger.info(f"Saved service registry to {self.config_file}")
-        except Exception as e:
-            logger.error(f"Error saving service registry: {e}")
+    def __init__(self, host=None, port=None, db=0, password=None):
+        if self._initialized:
+            return
+            
+        # Đọc cấu hình từ biến môi trường nếu không được cung cấp
+        self.redis_host = host or os.environ.get('REDIS_HOST', 'localhost')
+        self.redis_port = port or int(os.environ.get('REDIS_PORT', 6379))
+        self.redis_db = db or int(os.environ.get('REDIS_DB', 0))
+        self.redis_password = password or os.environ.get('REDIS_PASSWORD', None)
+        
+        # Khởi tạo Redis client
+        self.redis = redis.Redis(
+            host=self.redis_host,
+            port=self.redis_port,
+            db=self.redis_db,
+            password=self.redis_password,
+            decode_responses=True  # Tự động decode response thành string
+        )
+        
+        # Key prefix cho các services
+        self.service_key_prefix = "capyface:service:"
+        
+        self._initialized = True
+        logger.info(f"RedisServiceRegistry initialized with Redis at {self.redis_host}:{self.redis_port}")
     
     def register_service(self, service_name, host, port, use_tls=False,
                        stub_module=None, stub_class=None, methods=None):
@@ -60,8 +58,8 @@ class ServiceRegistry:
             stub_class: Tên class của stub
             methods: Dict chứa thông tin các methods
         """
-        # Cập nhật thông tin service
-        self.services[service_name] = {
+        # Tạo thông tin service
+        service_info = {
             "host": host,
             "port": port,
             "use_tls": use_tls,
@@ -70,8 +68,13 @@ class ServiceRegistry:
             "methods": methods or {}
         }
         
-        # Lưu cấu hình
-        self._save_config()
+        # Lưu vào Redis với TTL (ví dụ: 5 phút)
+        self.redis.setex(
+            f"{self.service_key_prefix}{service_name}",
+            300,  # 5 phút (300 giây)
+            json.dumps(service_info)
+        )
+        
         logger.info(f"Registered service: {service_name} at {host}:{port}")
     
     def register_method(self, service_name, method_name, request_module, request_class):
@@ -84,31 +87,100 @@ class ServiceRegistry:
             request_module: Module chứa request class
             request_class: Tên class của request
         """
-        if service_name not in self.services:
-            logger.error(f"Service {service_name} not found in registry")
-            return
+        # Kiểm tra xem service có tồn tại không
+        service_key = f"{self.service_key_prefix}{service_name}"
+        service_info_json = self.redis.get(service_key)
         
-        # Tạo dict methods nếu chưa có
-        if "methods" not in self.services[service_name]:
-            self.services[service_name]["methods"] = {}
+        if not service_info_json:
+            logger.error(f"Service {service_name} not found in registry")
+            return False
+        
+        # Parse thông tin service
+        service_info = json.loads(service_info_json)
+        
+        # Khởi tạo dict methods nếu chưa có
+        if "methods" not in service_info:
+            service_info["methods"] = {}
         
         # Thêm method
-        self.services[service_name]["methods"][method_name] = {
+        service_info["methods"][method_name] = {
             "request_module": request_module,
             "request_class": request_class
         }
         
-        # Lưu cấu hình
-        self._save_config()
+        # Cập nhật lại vào Redis
+        self.redis.setex(
+            service_key,
+            300,  # 5 phút TTL
+            json.dumps(service_info)
+        )
+        
         logger.info(f"Registered method: {service_name}.{method_name}")
+        return True
     
     def get_service_config(self, service_name):
         """Lấy cấu hình của service"""
-        return self.services.get(service_name)
+        service_key = f"{self.service_key_prefix}{service_name}"
+        service_info_json = self.redis.get(service_key)
+        
+        if not service_info_json:
+            logger.warning(f"Service {service_name} not found in registry")
+            return None
+        
+        return json.loads(service_info_json)
     
     def get_all_services(self):
         """Lấy cấu hình của tất cả services"""
-        return self.services
+        # Lấy tất cả keys có prefix là service_key_prefix
+        service_keys = self.redis.keys(f"{self.service_key_prefix}*")
+        
+        services = {}
+        for key in service_keys:
+            service_name = key.replace(self.service_key_prefix, '')
+            service_info = self.get_service_config(service_name)
+            if service_info:
+                services[service_name] = service_info
+        
+        return services
+    
+    def heartbeat(self, service_name):
+        """
+        Cập nhật thời gian sống của service (heartbeat)
+        """
+        service_key = f"{self.service_key_prefix}{service_name}"
+        service_info_json = self.redis.get(service_key)
+        
+        if not service_info_json:
+            logger.warning(f"Cannot send heartbeat - Service {service_name} not found in registry")
+            return False
+        
+        # Cập nhật TTL
+        self.redis.expire(service_key, 300)  # 5 phút
+        logger.debug(f"Heartbeat sent for service {service_name}")
+        return True
+    
+    def start_heartbeat(self, service_name, interval=60):
+        """
+        Bắt đầu gửi heartbeat định kỳ cho service
+        
+        Args:
+            service_name: Tên service cần gửi heartbeat
+            interval: Khoảng thời gian giữa các lần gửi heartbeat (giây)
+        """
+        def heartbeat_worker():
+            while True:
+                try:
+                    self.heartbeat(service_name)
+                    time.sleep(interval)
+                except Exception as e:
+                    logger.error(f"Error in heartbeat for {service_name}: {e}")
+                    time.sleep(5)  # Ngủ một chút khi có lỗi
+        
+        # Khởi động thread
+        thread = threading.Thread(target=heartbeat_worker, daemon=True)
+        thread.start()
+        logger.info(f"Started heartbeat for {service_name} with interval {interval}s")
+        return thread
 
 # Singleton instance
-service_registry = ServiceRegistry()
+service_registry = RedisServiceRegistry()
