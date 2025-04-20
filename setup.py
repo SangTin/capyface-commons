@@ -11,9 +11,9 @@ setup(
     include_package_data=True,
     install_requires=[
         "requests>=2.25.0",
-        "grpcio>=1.50.0",
-        "protobuf>=4.25.0",
-        "redis>=4.3.0",
+        "grpcio>=1.71.0",
+        "protobuf<6.0dev,>=5.26.1",
+        "redis>=5.2.0",
     ],
     author="CapyFace Team",
     author_email="sang080304@gmail.com",
