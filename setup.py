@@ -2,11 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="capyface-commons",
-    version="0.1.1",
+    version="0.2.1",
     packages=find_packages(),
     package_data={
         '': ['*.proto'],
+        'capyface_commons.generated': ['*_pb2.py', '*_pb2_grpc.py'],
     },
+    include_package_data=True,
     install_requires=[
         "requests>=2.25.0",
         "grpcio>=1.50.0",
