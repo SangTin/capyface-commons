@@ -4,8 +4,13 @@ setup(
     name="capyface-commons",
     version="0.1.0",
     packages=find_packages(),
+    package_data={
+        '': ['*.proto'],
+    },
     install_requires=[
         "requests>=2.25.0",
+        "grpcio>=1.50.0",
+        "protobuf>=4.25.0",
     ],
     author="CapyFace Team",
     author_email="sang080304@gmail.com",
