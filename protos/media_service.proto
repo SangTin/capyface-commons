@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package capyface.media;
+
+service MediaService {
+    /*
+     * Yêu cầu URL tải lên tệp tin
+     * @param filename Tên tệp tin
+     * @param content_type Kiểu nội dung của tệp tin
+     * @param title Tiêu đề của tệp tin
+     */
+    rpc RequestUploadUrl (RequestUploadUrlRequest) returns (RequestUploadUrlResponse) {}
+    /*
+     * Xác nhận tệp tin đã tải lên thành công
+     * @param media_id ID của tệp tin đã tải lên
+     * @param size_bytes Kích thước tệp tin đã tải lên
+     */
+    rpc ConfirmUpload (ConfirmUploadRequest) returns (ConfirmUploadResponse) {}
+    /*
+     * Yêu cầu URL tải xuống tệp tin
+     * @param media_id ID của tệp tin đã tải lên
+     */
+    rpc GetDownloadUrl (GetDownloadUrlRequest) returns (GetDownloadUrlResponse) {}
+}
+
+message RequestUploadUrlRequest {
+    string filename = 1;
+    string content_type = 2;
+    string title = 3;
+}
+
+message RequestUploadUrlResponse {
+    string id = 1;
+    string upload_url = 2;
+    string s3_key = 3;
+    int32 expires_in = 4;
+}
+
+message ConfirmUploadRequest {
+    string media_id = 1;
+    int64 size_bytes = 2;
+}
+
+message ConfirmUploadResponse {
+    string id = 1;
+    string title = 2;
+    string content_type = 3;
+    int64 size_bytes = 4;
+    string uploaded_at = 5;
+}
+
+message GetDownloadUrlRequest {
+    string media_id = 1;
+}
+
+message GetDownloadUrlResponse {
+    string download_url = 1;
+    int32 expires_in = 2;
+    string filename = 3;
+    string content_type = 4;
+    int64 size_bytes = 5;
+}
