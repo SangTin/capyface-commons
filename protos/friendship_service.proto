@@ -2,8 +2,11 @@ syntax = "proto3";
 
 package capyface.friendship;
 
+import "google/protobuf/empty.proto"; // You need to import this
+
 service FriendshipService {
   rpc GetFriends (GetFriendsRequest) returns (GetFriendsResponse) {}
+  rpc CreateUser (CreateUserRequest) returns (google.protobuf.Empty) {}
 }
 
 message GetFriendsRequest {
@@ -12,4 +15,9 @@ message GetFriendsRequest {
 
 message GetFriendsResponse {
   repeated string friend_ids = 1; // List of friend IDs
+}
+
+message CreateUserRequest {
+  string user_id = 1;
+  string username = 2; // Name of the user to be created
 }

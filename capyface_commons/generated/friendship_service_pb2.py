@@ -22,19 +22,22 @@ _runtime_version.ValidateProtobufRuntimeVersion(
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x18\x66riendship_service.proto\x12\x13\x63\x61pyface.friendship\"$\n\x11GetFriendsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"(\n\x12GetFriendsResponse\x12\x12\n\nfriend_ids\x18\x01 \x03(\t2t\n\x11\x46riendshipService\x12_\n\nGetFriends\x12&.capyface.friendship.GetFriendsRequest\x1a\'.capyface.friendship.GetFriendsResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x18\x66riendship_service.proto\x12\x13\x63\x61pyface.friendship\x1a\x1bgoogle/protobuf/empty.proto\"$\n\x11GetFriendsRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"(\n\x12GetFriendsResponse\x12\x12\n\nfriend_ids\x18\x01 \x03(\t\"6\n\x11\x43reateUserRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x10\n\x08username\x18\x02 \x01(\t2\xc4\x01\n\x11\x46riendshipService\x12_\n\nGetFriends\x12&.capyface.friendship.GetFriendsRequest\x1a\'.capyface.friendship.GetFriendsResponse\"\x00\x12N\n\nCreateUser\x12&.capyface.friendship.CreateUserRequest\x1a\x16.google.protobuf.Empty\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'friendship_service_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_GETFRIENDSREQUEST']._serialized_start=49
-  _globals['_GETFRIENDSREQUEST']._serialized_end=85
-  _globals['_GETFRIENDSRESPONSE']._serialized_start=87
-  _globals['_GETFRIENDSRESPONSE']._serialized_end=127
-  _globals['_FRIENDSHIPSERVICE']._serialized_start=129
-  _globals['_FRIENDSHIPSERVICE']._serialized_end=245
+  _globals['_GETFRIENDSREQUEST']._serialized_start=78
+  _globals['_GETFRIENDSREQUEST']._serialized_end=114
+  _globals['_GETFRIENDSRESPONSE']._serialized_start=116
+  _globals['_GETFRIENDSRESPONSE']._serialized_end=156
+  _globals['_CREATEUSERREQUEST']._serialized_start=158
+  _globals['_CREATEUSERREQUEST']._serialized_end=212
+  _globals['_FRIENDSHIPSERVICE']._serialized_start=215
+  _globals['_FRIENDSHIPSERVICE']._serialized_end=411
 # @@protoc_insertion_point(module_scope)
