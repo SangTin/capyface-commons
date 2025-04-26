@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package capyface.friendship;
+
+service FriendshipService {
+  rpc GetFriends (GetFriendsRequest) returns (GetFriendsResponse) {}
+}
+
+message GetFriendsRequest {
+  string user_id = 1; // ID of the user whose friends are being requested
+}
+
+message GetFriendsResponse {
+  repeated string friend_ids = 1; // List of friend IDs
+}
