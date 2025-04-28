@@ -7,6 +7,7 @@ import "google/protobuf/empty.proto"; // You need to import this
 service FriendshipService {
   rpc GetFriends (GetFriendsRequest) returns (GetFriendsResponse) {}
   rpc CreateUser (CreateUserRequest) returns (google.protobuf.Empty) {}
+  rpc AreFriends (AreFriendsRequest) returns (AreFriendsResponse) {}
 }
 
 message GetFriendsRequest {
@@ -20,4 +21,13 @@ message GetFriendsResponse {
 message CreateUserRequest {
   string user_id = 1;
   string username = 2; // Name of the user to be created
+}
+
+message AreFriendsRequest {
+  string user1_id = 1; // ID of the first user
+  string user2_id = 2; // ID of the second user
+}
+
+message AreFriendsResponse {
+  bool are_friends = 1; // True if the users are friends, false otherwise
 }

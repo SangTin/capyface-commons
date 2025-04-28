@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from . import friendship_service_pb2 as friendship__service__pb2
+from capyface_commons.generated import friendship_service_pb2 as friendship__service__pb2
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 GRPC_GENERATED_VERSION = '1.71.0'
@@ -45,6 +45,11 @@ class FriendshipServiceStub(object):
                 request_serializer=friendship__service__pb2.CreateUserRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
+        self.AreFriends = channel.unary_unary(
+                '/capyface.friendship.FriendshipService/AreFriends',
+                request_serializer=friendship__service__pb2.AreFriendsRequest.SerializeToString,
+                response_deserializer=friendship__service__pb2.AreFriendsResponse.FromString,
+                _registered_method=True)
 
 
 class FriendshipServiceServicer(object):
@@ -62,6 +67,12 @@ class FriendshipServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def AreFriends(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_FriendshipServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -74,6 +85,11 @@ def add_FriendshipServiceServicer_to_server(servicer, server):
                     servicer.CreateUser,
                     request_deserializer=friendship__service__pb2.CreateUserRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'AreFriends': grpc.unary_unary_rpc_method_handler(
+                    servicer.AreFriends,
+                    request_deserializer=friendship__service__pb2.AreFriendsRequest.FromString,
+                    response_serializer=friendship__service__pb2.AreFriendsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -130,6 +146,33 @@ class FriendshipService(object):
             '/capyface.friendship.FriendshipService/CreateUser',
             friendship__service__pb2.CreateUserRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def AreFriends(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/capyface.friendship.FriendshipService/AreFriends',
+            friendship__service__pb2.AreFriendsRequest.SerializeToString,
+            friendship__service__pb2.AreFriendsResponse.FromString,
             options,
             channel_credentials,
             insecure,
