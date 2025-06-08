@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="capyface-commons",
-    version="0.5.0",
+    version="0.5.1",
     packages=find_packages(),
     package_data={
         '': ['*.proto'],
@@ -12,7 +12,7 @@ setup(
     install_requires=[
         "requests>=2.25.0",
         "grpcio>=1.71.0",
-        "protobuf<6.0dev,>=5.26.1",
+        "protobuf>=5.26.1",
         "redis>=5.2.0",
     ],
     author="CapyFace Team",
